@@ -25,14 +25,65 @@ interface Message {
   avatar?: string;
 }
 
+interface ChatSession {
+  id: string;
+  title: string;
+  messages: Message[];
+  createdAt: number;
+}
+
 export default function CortexAiPage() {
   const router = useRouter();
   const isDesktop = useMediaQuery('(min-width: 768px)');
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
-  const [messages, setMessages] = useState<Message[]>(chatMessages);
+  const [sessions, setSessions] = useState<ChatSession[]>([]);
+  const [currentSessionId, setCurrentSessionId] = useState<string | null>(null);
   const [inputValue, setInputValue] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const messagesEndRef = React.useRef<HTMLDivElement>(null);
+
+  // Load sessions from LocalStorage on mount
+  React.useEffect(() => {
+    const savedSessions = localStorage.getItem('cortex_sessions');
+    if (savedSessions) {
+      try {
+        const parsed = JSON.parse(savedSessions);
+        setSessions(parsed);
+        if (parsed.length > 0) {
+          setCurrentSessionId(parsed[0].id);
+        } else {
+          createNewSession();
+        }
+      } catch (e) {
+        console.error('Failed to parse sessions', e);
+        createNewSession();
+      }
+    } else {
+      createNewSession();
+    }
+  }, []);
+
+  // Save sessions to LocalStorage whenever they change
+  React.useEffect(() => {
+    if (sessions.length > 0) {
+      localStorage.setItem('cortex_sessions', JSON.stringify(sessions));
+    }
+  }, [sessions]);
+
+  const createNewSession = () => {
+    const newSession: ChatSession = {
+      id: Date.now().toString(),
+      title: 'New Chat',
+      messages: [],
+      createdAt: Date.now(),
+    };
+    setSessions((prev) => [newSession, ...prev]);
+    setCurrentSessionId(newSession.id);
+    if (isDesktop === false) setIsSidebarOpen(false);
+  };
+
+  const currentSession = sessions.find((s) => s.id === currentSessionId);
+  const messages = currentSession?.messages || [];
 
   React.useEffect(() => {
     if (isDesktop) {
@@ -52,15 +103,34 @@ export default function CortexAiPage() {
 
   const handleSendMessage = async (e?: React.FormEvent) => {
     e?.preventDefault();
-    if (!inputValue.trim() || isLoading) return;
+    if (!inputValue.trim() || isLoading || !currentSessionId) return;
 
     const userMessage = {
-      id: messages.length + 1,
+      id: Date.now(),
       role: 'user',
       content: inputValue,
     };
 
-    setMessages((prev) => [...prev, userMessage]);
+    // Optimistic update
+    setSessions((prev) =>
+      prev.map((session) => {
+        if (session.id === currentSessionId) {
+          // Update title if it's the first message and title is default
+          const newTitle =
+            session.messages.length === 0 && session.title === 'New Chat'
+              ? userMessage.content.slice(0, 30) + (userMessage.content.length > 30 ? '...' : '')
+              : session.title;
+
+          return {
+            ...session,
+            title: newTitle,
+            messages: [...session.messages, userMessage],
+          };
+        }
+        return session;
+      })
+    );
+
     setInputValue('');
     setIsLoading(true);
 
@@ -80,21 +150,34 @@ export default function CortexAiPage() {
       }
 
       const aiResponse = {
-        id: messages.length + 2,
+        id: Date.now() + 1,
         role: 'assistant',
         content: data.response,
         avatar: '/avatars/cortex.png',
       };
-      setMessages((prev) => [...prev, aiResponse]);
+
+      setSessions((prev) =>
+        prev.map((session) =>
+          session.id === currentSessionId
+            ? { ...session, messages: [...session.messages, aiResponse] }
+            : session
+        )
+      );
     } catch (error) {
       console.error('Error sending message:', error);
       const errorResponse = {
-        id: messages.length + 2,
+        id: Date.now() + 1,
         role: 'assistant',
         content: "I'm having trouble connecting to my brain right now. Please check if the API key is configured correctly.",
         avatar: '/avatars/cortex.png',
       };
-      setMessages((prev) => [...prev, errorResponse]);
+      setSessions((prev) =>
+        prev.map((session) =>
+          session.id === currentSessionId
+            ? { ...session, messages: [...session.messages, errorResponse] }
+            : session
+        )
+      );
     } finally {
       setIsLoading(false);
     }
@@ -118,19 +201,29 @@ export default function CortexAiPage() {
               </Button>
             </div>
             <div className="flex-1 space-y-2 overflow-y-auto">
-              {chatHistory.map((chat) => (
+              {sessions.map((session) => (
                 <div
-                  key={chat.id}
-                  className="p-3 rounded-lg cursor-pointer bg-black/20"
+                  key={session.id}
+                  onClick={() => {
+                    setCurrentSessionId(session.id);
+                    if (!isDesktop) setIsSidebarOpen(false);
+                  }}
+                  className={cn(
+                    "p-3 rounded-lg cursor-pointer transition-colors",
+                    currentSessionId === session.id ? "bg-primary/40 border border-primary/50" : "bg-black/20 hover:bg-black/30"
+                  )}
                 >
-                  <h3 className="font-semibold truncate text-sm">{chat.title}</h3>
+                  <h3 className="font-semibold truncate text-sm">{session.title}</h3>
                   <p className="text-xs text-white/60 truncate">
-                    {chat.preview}
+                    {session.messages.length > 0 ? session.messages[session.messages.length - 1].content : 'No messages yet'}
                   </p>
                 </div>
               ))}
             </div>
-            <Button className="mt-4 w-full bg-primary/80 hover:bg-primary/90 shadow-[0_0_2rem_-0.5rem_hsl(var(--primary))] transition-shadow duration-300">
+            <Button
+              onClick={createNewSession}
+              className="mt-4 w-full bg-primary/80 hover:bg-primary/90 shadow-[0_0_2rem_-0.5rem_hsl(var(--primary))] transition-shadow duration-300"
+            >
               <Plus className="mr-2" />
               New Chat
             </Button>
@@ -156,45 +249,51 @@ export default function CortexAiPage() {
         </header>
 
         <div className="flex-1 overflow-y-auto p-6 space-y-8">
-          {messages.map((message) => (
-            <div
-              key={message.id}
-              className={cn(
-                'flex items-start gap-4',
-                message.role === 'user' && 'justify-end'
-              )}
-            >
-              {message.role === 'assistant' && (
-                <Avatar className="h-9 w-9 border">
-                  <AvatarImage src={`https://picsum.photos/seed/cortexai/100/100`} />
-                  <AvatarFallback>
-                    <Bot />
-                  </AvatarFallback>
-                </Avatar>
-              )}
+          {messages.length === 0 ? (
+            <div className="flex flex-col items-center justify-center h-full text-center text-muted-foreground opacity-50">
+              <Bot className="h-16 w-16 mb-4" />
+              <p className="text-lg">Start a conversation with Cortex-AI</p>
+            </div>
+          ) : (
+            messages.map((message) => (
               <div
+                key={message.id}
                 className={cn(
-                  'max-w-2xl rounded-lg p-3',
-                  message.role === 'assistant'
-                    ? 'bg-[#1E193B] text-white'
-                    : 'bg-card text-card-foreground'
+                  'flex items-start gap-4',
+                  message.role === 'user' && 'justify-end'
                 )}
               >
-                <p className="font-bold text-sm mb-1">
-                  {message.role === 'assistant' ? 'Cortex-AI' : 'You'}
-                </p>
-                <p className='text-sm whitespace-pre-wrap'>{message.content}</p>
+                {message.role === 'assistant' && (
+                  <Avatar className="h-9 w-9 border">
+                    <AvatarImage src={`https://picsum.photos/seed/cortexai/100/100`} />
+                    <AvatarFallback>
+                      <Bot />
+                    </AvatarFallback>
+                  </Avatar>
+                )}
+                <div
+                  className={cn(
+                    'max-w-2xl rounded-lg p-3',
+                    message.role === 'assistant'
+                      ? 'bg-[#1E193B] text-white'
+                      : 'bg-card text-card-foreground'
+                  )}
+                >
+                  <p className="font-bold text-sm mb-1">
+                    {message.role === 'assistant' ? 'Cortex-AI' : 'You'}
+                  </p>
+                  <p className='text-sm whitespace-pre-wrap'>{message.content}</p>
+                </div>
+                {message.role === 'user' && (
+                  <Avatar className="h-9 w-9 border">
+                    <AvatarImage src={`https://picsum.photos/seed/student/100/100`} />
+                    <AvatarFallback>
+                      <User />
+                    </AvatarFallback>
+                  </Avatar>
+                )}
               </div>
-              {message.role === 'user' && (
-                <Avatar className="h-9 w-9 border">
-                  <AvatarImage src={`https://picsum.photos/seed/student/100/100`} />
-                  <AvatarFallback>
-                    <User />
-                  </AvatarFallback>
-                </Avatar>
-              )}
-            </div>
-          ))}
+            )))}
           {isLoading && (
             <div className="flex items-start gap-4">
               <Avatar className="h-9 w-9 border">
