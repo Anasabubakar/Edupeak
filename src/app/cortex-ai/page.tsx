@@ -64,17 +64,40 @@ export default function CortexAiPage() {
     setInputValue('');
     setIsLoading(true);
 
-    // Simulate AI delay and response
-    setTimeout(() => {
+    try {
+      const response = await fetch('/api/chat', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ message: userMessage.content }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to get response');
+      }
+
       const aiResponse = {
         id: messages.length + 2,
         role: 'assistant',
-        content: "I'm currently running in simulation mode. To get real AI responses, please connect me to an AI provider API. \n\nHowever, I can tell you that your input was: " + userMessage.content,
+        content: data.response,
         avatar: '/avatars/cortex.png',
       };
       setMessages((prev) => [...prev, aiResponse]);
+    } catch (error) {
+      console.error('Error sending message:', error);
+      const errorResponse = {
+        id: messages.length + 2,
+        role: 'assistant',
+        content: "I'm having trouble connecting to my brain right now. Please check if the API key is configured correctly.",
+        avatar: '/avatars/cortex.png',
+      };
+      setMessages((prev) => [...prev, errorResponse]);
+    } finally {
       setIsLoading(false);
-    }, 1500);
+    }
   };
 
   return (
