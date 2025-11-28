@@ -196,8 +196,8 @@ export default function CortexAiPage() {
           <div className='flex flex-col flex-1 overflow-hidden'>
             <div className="flex items-center justify-between mb-6">
               <h2 className="text-xl font-bold">Chat History</h2>
-              <Button variant="ghost" size="icon" onClick={() => router.back()}>
-                <ArrowLeft className="h-5 w-5" />
+              <Button variant="ghost" size="icon" onClick={() => setIsSidebarOpen(false)}>
+                <PanelLeft className="h-5 w-5" />
               </Button>
             </div>
             <div className="flex-1 space-y-2 overflow-y-auto">
@@ -243,6 +243,15 @@ export default function CortexAiPage() {
             >
               <PanelLeft className="h-5 w-5" />
               <span className="sr-only">Toggle Sidebar</span>
+            </Button>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8"
+              onClick={() => router.back()}
+            >
+              <ArrowLeft className="h-5 w-5" />
+              <span className="sr-only">Go Back</span>
             </Button>
             <h1 className="text-lg font-semibold">Cortex-AI Assistant</h1>
           </div>
