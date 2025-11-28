@@ -1,0 +1,46 @@
+{
+  "placeholderImages": [
+    {
+      "id": "digital-skills",
+      "description": "A person using a laptop, representing digital skills.",
+      "imageUrl": "https://images.unsplash.com/photo-1525547719571-a2d4ac8945e2?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw1fHxsYXB0b3AlMjBjb2RlfGVufDB8fHx8MTc2MjUwMjA5N3ww&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "laptop code"
+    },
+    {
+      "id": "financial-literacy",
+      "description": "Abstract representation of financial growth.",
+      "imageUrl": "https://images.unsplash.com/photo-1762279389002-7b6abd7bd6c6?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw0fHxmaW5hbmNlJTIwZ3Jvd3RofGVufDB8fHx8MTc2MjUyNDQxNHww&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "finance growth"
+    },
+    {
+      "id": "pedagogy",
+      "description": "A teacher in front of a chalkboard.",
+      "imageUrl": "https://images.unsplash.com/photo-1758685734555-a0e7f15ea33f?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxMHx8dGVhY2hlciUyMGNoYWxrYm9hcmR8ZW58MHx8fHwxNzYyNTI0NDE0fDA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "teacher chalkboard"
+    },
+    {
+      "id": "classroom-management",
+      "description": "An organized and engaging classroom environment.",
+      "imageUrl": "https://images.unsplash.com/photo-1509062522246-3755977927d7?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxfHxjbGFzc3Jvb20lMjBzdHVkZW50c3xlbnwwfHx8fDE3NjI0NjAwMDR8MA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "classroom students"
+    },
+    {
+      "id": "cert-digital",
+      "description": "Illustration of a person interacting with digital interfaces.",
+      "imageUrl": "https://images.unsplash.com/photo-1659080907168-d567d70d27ea?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw5fHxEaWdpdGFsJTIwTGl0ZXJhY3klMjBDZXJ0aWZpY2F0ZXxlbnwwfHx8fDE3NjMwNTA1NzZ8MA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "Digital Literacy Certificate"
+    },
+    {
+      "id": "cert-math",
+      "description": "A certificate for mathematics.",
+      "imageUrl": "https://images.unsplash.com/photo-1693045181198-531b47a82ed8?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw1fHxNYXRoZW1hdGljcyUyMENlcnRpZmljYXRlfGVufDB8fHx8MTc2MzA1MDcwNXww&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "math certificate"
+    },
+    {
+      "id": "cert-english",
+      "description": "A certificate for English proficiency.",
+      "imageUrl": "https://images.unsplash.com/photo-1702450900298-1282dee626e0?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw1fHxFbmdsaXNoJTIwQ2VydGlmaWNhdGV8ZW58MHx8fHwxNzYzMDUwNzk3fDA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "english certificate"
+    }
+  ]
+}
