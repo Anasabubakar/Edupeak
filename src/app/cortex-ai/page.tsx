@@ -10,6 +10,7 @@ import {
   User,
   ArrowLeft,
   PanelLeft,
+  Trash2,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useRouter } from 'next/navigation';
@@ -81,6 +82,25 @@ export default function CortexAiPage() {
     setSessions((prev) => [newSession, ...prev]);
     setCurrentSessionId(newSession.id);
     if (isDesktop === false) setIsSidebarOpen(false);
+  };
+
+  const deleteSession = (sessionId: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (sessions.length === 1) {
+      // If deleting the last session, create a new one
+      createNewSession();
+      setSessions([]);
+      localStorage.removeItem('cortex_sessions');
+      return;
+    }
+
+    const newSessions = sessions.filter((s) => s.id !== sessionId);
+    setSessions(newSessions);
+
+    // If deleting the current session, switch to the first remaining one
+    if (currentSessionId === sessionId) {
+      setCurrentSessionId(newSessions[0].id);
+    }
   };
 
   const currentSession = sessions.find((s) => s.id === currentSessionId);
@@ -212,21 +232,30 @@ export default function CortexAiPage() {
                     initial={{ opacity: 0, x: -20 }}
                     animate={{ opacity: 1, x: 0 }}
                     transition={{ delay: index * 0.05 }}
-                    onClick={() => {
-                      setCurrentSessionId(session.id);
-                      if (!isDesktop) setIsSidebarOpen(false);
-                    }}
                     className={cn(
-                      "p-3 rounded-xl cursor-pointer transition-all duration-200 hover:scale-[1.02]",
+                      "p-3 rounded-xl cursor-pointer transition-all duration-200 hover:scale-[1.02] group relative",
                       currentSessionId === session.id
                         ? "bg-primary/30 border border-primary/50 shadow-[0_0_20px_rgba(var(--primary-rgb),0.3)]"
                         : "bg-white/5 hover:bg-white/10 backdrop-blur-sm"
                     )}
                   >
-                    <h3 className="font-semibold truncate text-sm">{session.title}</h3>
-                    <p className="text-xs text-white/60 truncate">
-                      {session.messages.length > 0 ? session.messages[session.messages.length - 1].content : 'No messages yet'}
-                    </p>
+                    <div onClick={() => {
+                      setCurrentSessionId(session.id);
+                      if (!isDesktop) setIsSidebarOpen(false);
+                    }}>
+                      <h3 className="font-semibold truncate text-sm pr-8">{session.title}</h3>
+                      <p className="text-xs text-white/60 truncate">
+                        {session.messages.length > 0 ? session.messages[session.messages.length - 1].content : 'No messages yet'}
+                      </p>
+                    </div>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={(e) => deleteSession(session.id, e)}
+                      className="absolute right-2 top-1/2 -translate-y-1/2 h-7 w-7 opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-500/20 hover:text-red-400"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
                   </motion.div>
                 ))}
               </div>
