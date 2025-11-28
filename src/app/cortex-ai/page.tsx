@@ -18,10 +18,21 @@ import { useRouter } from 'next/navigation';
 import React, { useState } from 'react';
 import { useMediaQuery } from '@/hooks/use-media-query';
 
+interface Message {
+  id: number;
+  role: string;
+  content: string;
+  avatar?: string;
+}
+
 export default function CortexAiPage() {
   const router = useRouter();
   const isDesktop = useMediaQuery('(min-width: 768px)');
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+  const [messages, setMessages] = useState<Message[]>(chatMessages);
+  const [inputValue, setInputValue] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+  const messagesEndRef = React.useRef<HTMLDivElement>(null);
 
   React.useEffect(() => {
     if (isDesktop) {
@@ -30,6 +41,41 @@ export default function CortexAiPage() {
       setIsSidebarOpen(false);
     }
   }, [isDesktop]);
+
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  };
+
+  React.useEffect(() => {
+    scrollToBottom();
+  }, [messages]);
+
+  const handleSendMessage = async (e?: React.FormEvent) => {
+    e?.preventDefault();
+    if (!inputValue.trim() || isLoading) return;
+
+    const userMessage = {
+      id: messages.length + 1,
+      role: 'user',
+      content: inputValue,
+    };
+
+    setMessages((prev) => [...prev, userMessage]);
+    setInputValue('');
+    setIsLoading(true);
+
+    // Simulate AI delay and response
+    setTimeout(() => {
+      const aiResponse = {
+        id: messages.length + 2,
+        role: 'assistant',
+        content: "I'm currently running in simulation mode. To get real AI responses, please connect me to an AI provider API. \n\nHowever, I can tell you that your input was: " + userMessage.content,
+        avatar: '/avatars/cortex.png',
+      };
+      setMessages((prev) => [...prev, aiResponse]);
+      setIsLoading(false);
+    }, 1500);
+  };
 
   return (
     <div className="flex h-full bg-background overflow-hidden">
@@ -87,7 +133,7 @@ export default function CortexAiPage() {
         </header>
 
         <div className="flex-1 overflow-y-auto p-6 space-y-8">
-          {chatMessages.map((message) => (
+          {messages.map((message) => (
             <div
               key={message.id}
               className={cn(
@@ -97,7 +143,7 @@ export default function CortexAiPage() {
             >
               {message.role === 'assistant' && (
                 <Avatar className="h-9 w-9 border">
-                   <AvatarImage src={`https://picsum.photos/seed/cortexai/100/100`} />
+                  <AvatarImage src={`https://picsum.photos/seed/cortexai/100/100`} />
                   <AvatarFallback>
                     <Bot />
                   </AvatarFallback>
@@ -116,9 +162,9 @@ export default function CortexAiPage() {
                 </p>
                 <p className='text-sm whitespace-pre-wrap'>{message.content}</p>
               </div>
-               {message.role === 'user' && (
+              {message.role === 'user' && (
                 <Avatar className="h-9 w-9 border">
-                   <AvatarImage src={`https://picsum.photos/seed/student/100/100`} />
+                  <AvatarImage src={`https://picsum.photos/seed/student/100/100`} />
                   <AvatarFallback>
                     <User />
                   </AvatarFallback>
@@ -126,20 +172,40 @@ export default function CortexAiPage() {
               )}
             </div>
           ))}
+          {isLoading && (
+            <div className="flex items-start gap-4">
+              <Avatar className="h-9 w-9 border">
+                <AvatarImage src={`https://picsum.photos/seed/cortexai/100/100`} />
+                <AvatarFallback>
+                  <Bot />
+                </AvatarFallback>
+              </Avatar>
+              <div className="bg-[#1E193B] text-white max-w-2xl rounded-lg p-3">
+                <div className="flex space-x-2">
+                  <div className="w-2 h-2 bg-white/50 rounded-full animate-bounce [animation-delay:-0.3s]"></div>
+                  <div className="w-2 h-2 bg-white/50 rounded-full animate-bounce [animation-delay:-0.15s]"></div>
+                  <div className="w-2 h-2 bg-white/50 rounded-full animate-bounce"></div>
+                </div>
+              </div>
+            </div>
+          )}
+          <div ref={messagesEndRef} />
         </div>
 
         <div className="border-t p-4 bg-background">
-          <form onSubmit={(e) => e.preventDefault()} className="relative">
+          <form onSubmit={handleSendMessage} className="relative">
             <Input
-              placeholder="AI chat is temporarily disabled."
+              placeholder="Ask Cortex anything..."
               className="pr-12 h-12 text-base bg-card"
-              disabled={true}
+              value={inputValue}
+              onChange={(e) => setInputValue(e.target.value)}
+              disabled={isLoading}
             />
             <Button
               type="submit"
               size="icon"
               className="absolute right-2 top-1/2 -translate-y-1/2 h-9 w-9"
-              disabled={true}
+              disabled={!inputValue.trim() || isLoading}
             >
               <Send className="h-5 w-5" />
             </Button>
