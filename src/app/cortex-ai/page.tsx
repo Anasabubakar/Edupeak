@@ -154,12 +154,51 @@ export default function CortexAIPage() {
     }
   };
 
+  const MOCK_USER_CONTEXT = {
+    name: "Student",
+    courses: [
+      { name: "CS101: Intro to Computer Science", grade: "A-", progress: "Week 5" },
+      { name: "ECON101: Microeconomics", grade: "B+", progress: "Week 4" },
+      { name: "MATH101: Calculus I", grade: "B", progress: "Week 6" }
+    ],
+    recentTopics: ["Data Structures", "Supply and Demand", "Chain Rule"],
+    weaknesses: ["Calculus Chain Rule", "Market Equilibrium"]
+  };
+
   const generateAIResponse = useCallback((query: string, history: Message[]): string => {
     const lower = query.toLowerCase();
-    const lastUserMessage = history.filter(m => m.role === "user").pop()?.content.toLowerCase() || "";
+    const lastUserMessage = history.filter(m => m.role === "user").pop()?.content || "";
     const lastAiMessage = history.filter(m => m.role === "ai").pop()?.content || "";
 
-    // Context awareness check
+    // 1. Handle Image Context
+    // The content passed here might be "[Image Uploaded] <description>\n\n<user query>"
+    if (query.includes("[Image Uploaded]")) {
+      const [imgPart, textPart] = query.split("\n\n");
+      const description = imgPart.replace("[Image Uploaded] ", "");
+      const userQuery = textPart || "";
+
+      if (userQuery.toLowerCase().includes("what is this") || userQuery.toLowerCase().includes("describe")) {
+        return `Based on the image, ${description.charAt(0).toLowerCase() + description.slice(1)}`;
+      }
+
+      if (userQuery.toLowerCase().includes("explain") || userQuery.toLowerCase().includes("help")) {
+        return `I see you've uploaded an image showing ${description.toLowerCase().replace("the image shows ", "")}. \n\nTo help you with this, could you specify which part you find most confusing?`;
+      }
+
+      return `I've analyzed the image. It appears to show ${description.toLowerCase().replace("the image shows ", "")}. How can I help you with it?`;
+    }
+
+    // 2. Handle User Progress & Context
+    if (lower.includes("my progress") || lower.includes("how am i doing") || lower.includes("my grades")) {
+      const grades = MOCK_USER_CONTEXT.courses.map(c => `${c.name}: ${c.grade}`).join(", ");
+      return `You're currently enrolled in ${MOCK_USER_CONTEXT.courses.length} courses. Here's a quick look at your grades: ${grades}. Keep up the good work!`;
+    }
+
+    if (lower.includes("what should i study") || lower.includes("recommendation") || lower.includes("weakness")) {
+      return `Based on your recent performance, I recommend reviewing: ${MOCK_USER_CONTEXT.weaknesses.join(" and ")}. specifically. Would you like me to generate a study plan for these topics?`;
+    }
+
+    // 3. Context Awareness (Previous Messages)
     if (lower.includes("explain that") || lower.includes("explain it") || lower.includes("what do you mean")) {
       return `Regarding "${lastAiMessage.slice(0, 50)}...": \n\nI can break this down further. What specific part is confusing?`;
     }
@@ -168,10 +207,7 @@ export default function CortexAIPage() {
       return `Here is a simpler explanation of what we were discussing:\n\n${lastAiMessage}`;
     }
 
-    if (lower.includes("image") && lower.includes("analysis")) {
-      return "Based on the image you uploaded, I can see the details you're asking about. It appears to be related to your study material. Is there a specific part you'd like me to focus on?";
-    }
-
+    // 4. General Knowledge Fallbacks
     if (lower.includes("opportunity cost")) {
       return "Opportunity cost is the potential benefit you miss out on when choosing one alternative over another. In economics, it's a fundamental concept because resources are scarce.";
     }
