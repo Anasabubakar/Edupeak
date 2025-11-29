@@ -17,7 +17,8 @@ import {
   MessageSquare,
   Trash2,
   Image as ImageIcon,
-  X
+  X,
+  Menu
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Card } from "@/components/ui/card";
@@ -46,8 +47,8 @@ type Message = {
 type ChatSession = {
   id: string;
   title: string;
-  date: Date;
-  preview: string;
+  messages: Message[];
+  updatedAt: Date;
 };
 
 const SUGGESTED_PROMPTS = [
@@ -57,10 +58,12 @@ const SUGGESTED_PROMPTS = [
   "What are the basic principles of Object-Oriented Programming?",
 ];
 
-const STORAGE_KEY = "cortexChatHistory";
+const STORAGE_KEY = "cortexChatSessions";
+const CURRENT_SESSION_KEY = "cortexCurrentSessionId";
 
 export default function CortexAIPage() {
-  const [messages, setMessages] = useState<Message[]>([]);
+  const [sessions, setSessions] = useState<ChatSession[]>([]);
+  const [currentSessionId, setCurrentSessionId] = useState<string | null>(null);
   const [input, setInput] = useState("");
   const [isTyping, setIsTyping] = useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
@@ -70,74 +73,119 @@ export default function CortexAIPage() {
 
   const scrollRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const lastAIResponse = useRef<string>("");
 
-  // Load persisted messages on mount
+  // Initialize sessions
   useEffect(() => {
     if (typeof window !== "undefined") {
-      const stored = localStorage.getItem(STORAGE_KEY);
-      if (stored) {
+      const storedSessions = localStorage.getItem(STORAGE_KEY);
+      const storedCurrentId = localStorage.getItem(CURRENT_SESSION_KEY);
+
+      if (storedSessions) {
         try {
-          const parsed: Message[] = JSON.parse(stored);
-          parsed.forEach((m) => (m.timestamp = new Date(m.timestamp)));
-          setMessages(parsed);
-          const lastAI = parsed.filter((m) => m.role === "ai").pop();
-          if (lastAI) lastAIResponse.current = lastAI.content;
-        } catch {
-          // ignore parse errors
+          const parsed: ChatSession[] = JSON.parse(storedSessions);
+          // Revive dates
+          parsed.forEach(s => {
+            s.updatedAt = new Date(s.updatedAt);
+            s.messages.forEach(m => m.timestamp = new Date(m.timestamp));
+          });
+          setSessions(parsed);
+
+          if (storedCurrentId && parsed.find(s => s.id === storedCurrentId)) {
+            setCurrentSessionId(storedCurrentId);
+          } else if (parsed.length > 0) {
+            setCurrentSessionId(parsed[0].id);
+          } else {
+            createNewSession();
+          }
+        } catch (e) {
+          console.error("Failed to parse sessions", e);
+          createNewSession();
         }
       } else {
-        const welcome: Message = {
-          id: "1",
-          role: "ai",
-          content:
-            "Hello! I'm Cortex, your personal AI study assistant. How can I help you with your university coursework today?",
-          timestamp: new Date(),
-        };
-        setMessages([welcome]);
-        lastAIResponse.current = welcome.content;
+        createNewSession();
       }
     }
   }, []);
 
-  // Persist messages whenever they change
+  // Persist sessions
   useEffect(() => {
-    if (typeof window !== "undefined") {
-      const toStore = messages.map((m) => ({ ...m, timestamp: m.timestamp.toISOString() }));
+    if (typeof window !== "undefined" && sessions.length > 0) {
+      const toStore = sessions.map(s => ({
+        ...s,
+        updatedAt: s.updatedAt.toISOString(),
+        messages: s.messages.map(m => ({ ...m, timestamp: m.timestamp.toISOString() }))
+      }));
       localStorage.setItem(STORAGE_KEY, JSON.stringify(toStore));
     }
-  }, [messages]);
+  }, [sessions]);
 
-  // Auto‑scroll to bottom on new messages
+  // Persist current session ID
+  useEffect(() => {
+    if (typeof window !== "undefined" && currentSessionId) {
+      localStorage.setItem(CURRENT_SESSION_KEY, currentSessionId);
+    }
+  }, [currentSessionId]);
+
+  // Auto-scroll
   useEffect(() => {
     if (scrollRef.current) {
       scrollRef.current.scrollIntoView({ behavior: "smooth" });
     }
-  }, [messages, isTyping, imagePreview]);
+  }, [sessions, currentSessionId, isTyping, imagePreview]);
 
-  const generateAIResponse = useCallback((query: string): string => {
+  const getCurrentSession = () => sessions.find(s => s.id === currentSessionId);
+
+  const createNewSession = () => {
+    const newSession: ChatSession = {
+      id: Date.now().toString(),
+      title: "New Chat",
+      messages: [{
+        id: "welcome",
+        role: "ai",
+        content: "Hello! I'm Cortex, your personal AI study assistant. How can I help you with your university coursework today?",
+        timestamp: new Date()
+      }],
+      updatedAt: new Date()
+    };
+    setSessions(prev => [newSession, ...prev]);
+    setCurrentSessionId(newSession.id);
+    if (window.innerWidth < 768) {
+      setIsSidebarOpen(false); // Close sidebar on mobile when new chat starts
+    }
+  };
+
+  const generateAIResponse = useCallback((query: string, history: Message[]): string => {
     const lower = query.toLowerCase();
+    const lastUserMessage = history.filter(m => m.role === "user").pop()?.content.toLowerCase() || "";
+    const lastAiMessage = history.filter(m => m.role === "ai").pop()?.content || "";
+
+    // Context awareness check
+    if (lower.includes("explain that") || lower.includes("explain it") || lower.includes("what do you mean")) {
+      return `Regarding "${lastAiMessage.slice(0, 50)}...": \n\nI can break this down further. What specific part is confusing?`;
+    }
+
+    if (lower.includes("simpler") || lower.includes("simplify")) {
+      return `Here is a simpler explanation of what we were discussing:\n\n${lastAiMessage}`;
+    }
 
     if (lower.includes("image") && lower.includes("analysis")) {
       return "Based on the image you uploaded, I can see the details you're asking about. It appears to be related to your study material. Is there a specific part you'd like me to focus on?";
     }
 
-    if (lower.includes("simpler") && lastAIResponse.current) {
-      return `Simplified: ${lastAIResponse.current}`;
-    }
     if (lower.includes("opportunity cost")) {
-      return "Opportunity cost is the potential benefit you miss out on when choosing one alternative over another. In economics, it's a fundamental concept because resources are scarce. For example, if you spend time studying Economics, the opportunity cost is the time you could have spent studying Computer Science or sleeping.";
+      return "Opportunity cost is the potential benefit you miss out on when choosing one alternative over another. In economics, it's a fundamental concept because resources are scarce.";
     }
     if (lower.includes("macbeth")) {
-      return "Shakespeare's Macbeth explores themes of ambition, guilt, and the corrupting power of unchecked desire. Macbeth's ambition drives him to commit regicide, but his guilt manifests in hallucinations and paranoia. The play also examines fate vs. free will.";
+      return "Shakespeare's Macbeth explores themes of ambition, guilt, and the corrupting power of unchecked desire. Macbeth's ambition drives him to commit regicide.";
     }
     if (lower.includes("derivative")) {
-      return "The derivative of x^2 is 2x. This is found using the power rule: d/dx(x^n) = nx^(n-1). So for x^2, n=2, giving 2x.";
+      return "The derivative of x^2 is 2x. This is found using the power rule: d/dx(x^n) = nx^(n-1).";
     }
     if (lower.includes("oop") || lower.includes("object-oriented")) {
-      return "The four pillars of OOP are: 1. Encapsulation (bundling data and methods), 2. Abstraction (hiding complex details), 3. Inheritance (creating new classes from existing ones), and 4. Polymorphism (objects taking on multiple forms).";
+      return "The four pillars of OOP are: Encapsulation, Abstraction, Inheritance, and Polymorphism.";
     }
-    return "That's an interesting question! As an AI study assistant, I can help you break down complex topics. Could you provide more specific details or context from your course material so I can give you the best explanation?";
+
+    return "That's an interesting question! As an AI study assistant, I can help you break down complex topics. Could you provide more specific details or context?";
   }, []);
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -158,23 +206,24 @@ export default function CortexAIPage() {
     if (fileInputRef.current) fileInputRef.current.value = "";
   };
 
-  const handleDeleteHistory = () => {
+  const handleDeleteSession = () => {
     if (deleteId) {
-      // In this simple implementation, we are just clearing the chat if the ID matches the current session
-      // Real implementation would manage multiple sessions. 
-      // For now, we'll reset the chat if the user deletes the "current" session (which is all we have)
-      setMessages([{
-        id: Date.now().toString(),
-        role: "ai",
-        content: "Chat history cleared. How can I help you?",
-        timestamp: new Date(),
-      }]);
+      const newSessions = sessions.filter(s => s.id !== deleteId);
+      setSessions(newSessions);
+
+      if (currentSessionId === deleteId) {
+        if (newSessions.length > 0) {
+          setCurrentSessionId(newSessions[0].id);
+        } else {
+          createNewSession();
+        }
+      }
       setDeleteId(null);
     }
   };
 
   const handleSend = async () => {
-    if (!input.trim() && !uploadedImage) return;
+    if ((!input.trim() && !uploadedImage) || !currentSessionId) return;
 
     let content = input;
     let imageUrl = undefined;
@@ -190,25 +239,50 @@ export default function CortexAIPage() {
     const userMessage: Message = {
       id: Date.now().toString(),
       role: "user",
-      content: input || "Analyze this image", // Fallback if only image sent
+      content: input || "Analyze this image",
       timestamp: new Date(),
       imageUrl: imageUrl
     };
 
-    setMessages((prev) => [...prev, userMessage]);
+    // Update session with user message
+    setSessions(prev => prev.map(s => {
+      if (s.id === currentSessionId) {
+        return {
+          ...s,
+          messages: [...s.messages, userMessage],
+          title: s.messages.length === 1 ? (input.slice(0, 30) || "Image Analysis") : s.title,
+          updatedAt: new Date()
+        };
+      }
+      return s;
+    }));
+
     setInput("");
     setIsTyping(true);
 
+    // Generate AI response
     setTimeout(() => {
-      const aiContent = generateAIResponse(content);
+      const currentSession = sessions.find(s => s.id === currentSessionId);
+      const history = currentSession ? [...currentSession.messages, userMessage] : [userMessage];
+      const aiContent = generateAIResponse(content, history);
+
       const aiMessage: Message = {
         id: (Date.now() + 1).toString(),
         role: "ai",
         content: aiContent,
         timestamp: new Date(),
       };
-      setMessages((prev) => [...prev, aiMessage]);
-      lastAIResponse.current = aiContent;
+
+      setSessions(prev => prev.map(s => {
+        if (s.id === currentSessionId) {
+          return {
+            ...s,
+            messages: [...s.messages, aiMessage],
+            updatedAt: new Date()
+          };
+        }
+        return s;
+      }));
       setIsTyping(false);
     }, 1500);
   };
@@ -216,63 +290,69 @@ export default function CortexAIPage() {
   const SidebarContent = () => (
     <div className="flex flex-col h-full">
       <div className="p-4 border-b">
-        <Button className="w-full justify-start gap-2" variant="secondary" onClick={() => setMessages([{
-          id: Date.now().toString(),
-          role: "ai",
-          content: "Hello! I'm Cortex, your personal AI study assistant. How can I help you with your university coursework today?",
-          timestamp: new Date(),
-        }])}>
+        <Button className="w-full justify-start gap-2" variant="secondary" onClick={createNewSession}>
           <Plus className="h-4 w-4" />
           New Chat
         </Button>
       </div>
       <ScrollArea className="flex-1 p-4">
-        <div className="space-y-4">
-          <div className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
-            Recent
+        <div className="space-y-2">
+          <div className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-2">
+            History
           </div>
-          {/* We are simulating "Recent" sessions from the current message history for demo purposes */}
-          {messages.length > 1 && (
-            <div className="group relative w-full rounded-lg hover:bg-muted transition-colors">
+          {sessions.map((session) => (
+            <div key={session.id} className="group relative w-full rounded-lg hover:bg-muted transition-colors">
               <button
-                className="w-full text-left p-3 pr-10"
+                className={cn(
+                  "w-full text-left p-3 pr-10 rounded-lg transition-colors",
+                  currentSessionId === session.id ? "bg-primary/10 text-primary" : "hover:bg-muted"
+                )}
+                onClick={() => {
+                  setCurrentSessionId(session.id);
+                  if (window.innerWidth < 768) setIsSidebarOpen(false);
+                }}
               >
                 <div className="font-medium text-sm truncate flex items-center gap-2">
-                  <MessageSquare className="h-4 w-4 text-muted-foreground group-hover:text-primary" />
-                  Current Session
+                  <MessageSquare className="h-4 w-4 opacity-70" />
+                  {session.title || "New Chat"}
                 </div>
-                <div className="text-xs text-muted-foreground truncate pl-6 mt-1">
-                  {messages[messages.length - 1].content.slice(0, 25)}...
+                <div className="text-xs text-muted-foreground truncate pl-6 mt-1 opacity-70">
+                  {session.updatedAt.toLocaleDateString()}
                 </div>
               </button>
               <Button
                 variant="ghost"
                 size="icon"
                 className="absolute right-1 top-1/2 -translate-y-1/2 h-8 w-8 opacity-0 group-hover:opacity-100 transition-opacity text-muted-foreground hover:text-destructive"
-                onClick={() => setDeleteId("current")}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setDeleteId(session.id);
+                }}
               >
                 <Trash2 className="h-4 w-4" />
               </Button>
             </div>
-          )}
+          ))}
         </div>
       </ScrollArea>
     </div>
   );
+
+  const currentMessages = getCurrentSession()?.messages || [];
 
   return (
     <div className="flex h-screen bg-background overflow-hidden">
       <AlertDialog open={!!deleteId} onOpenChange={() => setDeleteId(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Delete Chat History?</AlertDialogTitle>
+            <AlertDialogTitle>Delete Chat?</AlertDialogTitle>
             <AlertDialogDescription>
-              This action cannot be undone. This will permanently delete your chat history from this device.
+              This will permanently delete this conversation.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction onClick={handleDeleteHistory} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">Delete</AlertDialogAction>
+            <AlertDialogAction onClick={handleDeleteSession} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">Delete</AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
@@ -304,11 +384,12 @@ export default function CortexAIPage() {
             >
               <PanelLeft className="h-5 w-5" />
             </Button>
+
             {/* Mobile Sidebar Trigger */}
             <Sheet>
               <SheetTrigger asChild>
                 <Button variant="ghost" size="icon" className="md:hidden">
-                  <PanelLeft className="h-5 w-5" />
+                  <Menu className="h-5 w-5" />
                 </Button>
               </SheetTrigger>
               <SheetContent side="left" className="p-0 w-80">
@@ -328,7 +409,18 @@ export default function CortexAIPage() {
             </Button>
           </div>
 
-          <Button variant="outline" size="sm" onClick={() => setMessages([messages[0]])}>
+          <Button variant="outline" size="sm" onClick={() => {
+            setSessions(prev => prev.map(s => {
+              if (s.id === currentSessionId) {
+                return {
+                  ...s,
+                  messages: [s.messages[0]], // Keep only welcome message
+                  updatedAt: new Date()
+                };
+              }
+              return s;
+            }));
+          }}>
             <RefreshCw className="mr-2 h-4 w-4" />
             Reset Chat
           </Button>
@@ -338,7 +430,7 @@ export default function CortexAIPage() {
         <div className="flex-1 overflow-hidden relative flex flex-col">
           <ScrollArea className="flex-1 p-4 md:p-8">
             <div className="max-w-3xl mx-auto space-y-6">
-              {messages.map((message) => (
+              {currentMessages.map((message) => (
                 <div
                   key={message.id}
                   className={cn("flex gap-4", message.role === "user" ? "flex-row-reverse" : "")}
@@ -405,7 +497,7 @@ export default function CortexAIPage() {
                 </div>
               )}
 
-              {messages.length === 1 && !imagePreview && (
+              {currentMessages.length === 1 && !imagePreview && (
                 <div className="mb-4 flex gap-2 overflow-x-auto pb-2 scrollbar-none">
                   {SUGGESTED_PROMPTS.map((prompt) => (
                     <Button

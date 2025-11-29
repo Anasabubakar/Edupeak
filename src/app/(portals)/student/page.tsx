@@ -19,13 +19,13 @@ export default function StudentDashboard() {
   return (
     <div className="space-y-8">
       {/* Hero Section */}
-      <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-primary/20 via-primary/10 to-background border border-primary/20 p-8 md:p-12">
+      <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-primary/20 via-primary/10 to-background border border-primary/20 p-6 md:p-12">
         <div className="absolute top-0 right-0 -mt-10 -mr-10 h-64 w-64 rounded-full bg-primary/20 blur-3xl animate-pulse" />
         <div className="relative z-10">
           <motion.h1
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="text-4xl md:text-5xl font-bold font-headline text-gradient-primary mb-4"
+            className="text-3xl md:text-5xl font-bold font-headline text-gradient-primary mb-4"
           >
             Welcome back, Student!
           </motion.h1>
@@ -33,7 +33,7 @@ export default function StudentDashboard() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.1 }}
-            className="text-lg text-muted-foreground max-w-2xl"
+            className="text-base md:text-lg text-muted-foreground max-w-2xl"
           >
             "The capacity to learn is a gift; the ability to learn is a skill; the willingness to learn is a choice." – Brian Herbert
           </motion.p>
@@ -41,14 +41,14 @@ export default function StudentDashboard() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.2 }}
-            className="mt-8 flex gap-4"
+            className="mt-6 md:mt-8 flex flex-col sm:flex-row gap-4"
           >
-            <Button size="lg" className="rounded-full shadow-lg shadow-primary/25 hover:shadow-primary/40 transition-all" asChild>
+            <Button size="lg" className="rounded-full shadow-lg shadow-primary/25 hover:shadow-primary/40 transition-all w-full sm:w-auto" asChild>
               <Link href="/student/learn">
                 Resume Learning <ArrowRight className="ml-2 h-4 w-4" />
               </Link>
             </Button>
-            <Button size="lg" variant="outline" className="rounded-full bg-background/50 backdrop-blur-sm border-primary/20 hover:bg-primary/10" asChild>
+            <Button size="lg" variant="outline" className="rounded-full bg-background/50 backdrop-blur-sm border-primary/20 hover:bg-primary/10 w-full sm:w-auto" asChild>
               <Link href="/student/planner">
                 View Schedule
               </Link>
@@ -58,7 +58,7 @@ export default function StudentDashboard() {
       </div>
 
       {/* Stats Grid */}
-      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-4 md:gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
         {[
           { label: "Courses in Progress", value: "3", icon: BookOpen, color: "text-blue-400", bg: "bg-blue-400/10" },
           { label: "Assignments Due", value: "2", icon: Clock, color: "text-orange-400", bg: "bg-orange-400/10" },

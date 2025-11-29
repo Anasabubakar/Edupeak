@@ -40,7 +40,7 @@ export function MainSidebar() {
   return (
     <aside
       className={cn(
-        "relative flex flex-col h-screen border-r border-white/5 bg-background/50 backdrop-blur-xl transition-all duration-300 ease-in-out z-50",
+        "relative hidden md:flex flex-col h-screen border-r border-white/5 bg-background/50 backdrop-blur-xl transition-all duration-300 ease-in-out z-50",
         isCollapsed ? "w-20" : "w-72"
       )}
     >
