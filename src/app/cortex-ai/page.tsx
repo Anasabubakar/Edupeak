@@ -190,7 +190,7 @@ export default function CortexAIPage() {
             </Sheet>
 
             <Button variant="ghost" size="sm" asChild className="gap-2">
-              <Link href="/student/dashboard">
+              <Link href="/student">
                 <ArrowLeft className="h-4 w-4" />
                 Back to Dashboard
               </Link>
