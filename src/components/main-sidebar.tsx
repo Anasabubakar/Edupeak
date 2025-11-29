@@ -16,97 +16,55 @@ import {
   LineChart,
   Award,
   Calendar,
+  Settings,
+  LogOut,
+  ChevronLeft,
+  ChevronRight,
+  User
 } from "lucide-react";
-import { cn } from "@/lib/utils";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { EdupeakLogo } from "./icons";
-import { useSidebar } from "./ui/sidebar";
-import { Sheet, SheetContent, SheetTitle } from "@/components/ui/sheet";
-import { Button } from "./ui/button";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "./ui/tooltip";
 
 const studentNav = [
-  { href: "/student", icon: LayoutDashboard, label: "Dashboard" },
-  { href: "/student/progress", icon: LineChart, label: "Progress Tracker" },
+  { href: "/student/dashboard", icon: LayoutDashboard, label: "Dashboard" },
   { href: "/student/learn", icon: BookOpen, label: "Learn" },
   { href: "/student/quiz", icon: Target, label: "Lessons" },
   { href: "/student/planner", icon: Calendar, label: "Study Planner" },
   { href: "/student/certificates", icon: Award, label: "Certificates" },
   { href: "/student/resilience", icon: Trophy, label: "Resilience Score" },
   { href: "/cortex-ai", icon: Sparkles, label: "Cortex AI" },
-];
-
-const teacherNav = [
-  { href: "/teacher", icon: BarChart3, label: "Analytics" },
-  { href: "/teacher/content", icon: Edit, label: "Custom Content" },
-  { href: "/teacher/training", icon: Library, label: "Training" },
+  { href: "/student/progress", icon: LineChart, label: "Progress Tracker" },
 ];
 
 export function MainSidebar() {
-  const { isMobile, open, setOpen, isCollapsed, toggleCollapsed } = useSidebar();
   const pathname = usePathname();
-  const portal = pathname.split("/")[1] || "student";
-
-  const getNavItems = () => {
-    switch (portal) {
-      case "student":
-        return studentNav;
-      case "teacher":
-        return teacherNav;
-      default:
-        return studentNav;
-    }
-  };
-
-  const navItems = getNavItems();
-
-  const SidebarContent = () => (
-    <div className="flex h-full flex-col bg-sidebar text-sidebar-foreground">
-      <header
-        className={cn(
-          "flex h-16 items-center justify-between border-b border-sidebar-border px-4"
-        )}
+  EDUPEAK
+          </span >
+        </Link >
+    {!isMobile && (
+      <Button
+        variant="ghost"
+        size="icon"
+        className="h-8 w-8"
+        onClick={toggleCollapsed}
       >
-        <Link
-          href="/"
+        <ChevronsLeft
           className={cn(
-            "flex items-center gap-2 font-bold text-sidebar-foreground",
-            isCollapsed && !isMobile && "justify-center"
+            "h-5 w-5 transition-transform",
+            isCollapsed && "rotate-180"
           )}
-        >
-          <EdupeakLogo className="h-6 w-6 text-sidebar-primary" />
-          <span
-            className={cn(
-              "transition-all",
-              isCollapsed && !isMobile ? "hidden" : "inline"
-            )}
-          >
-            EDUPEAK
-          </span>
-        </Link>
-        {!isMobile && (
-          <Button
-            variant="ghost"
-            size="icon"
-            className="h-8 w-8"
-            onClick={toggleCollapsed}
-          >
-            <ChevronsLeft
-              className={cn(
-                "h-5 w-5 transition-transform",
-                isCollapsed && "rotate-180"
-              )}
-            />
-            <span className="sr-only">
-              {isCollapsed ? "Expand Sidebar" : "Collapse Sidebar"}
-            </span>
-          </Button>
-        )}
-      </header>
+        />
+        <span className="sr-only">
+          {isCollapsed ? "Expand Sidebar" : "Collapse Sidebar"}
+        </span>
+      </Button>
+    )
+}
+      </header >
       <TooltipProvider delayDuration={0}>
         <nav
           className={cn(
@@ -171,28 +129,28 @@ export function MainSidebar() {
       >
         {/* The toggle button was moved to the header */}
       </footer>
-    </div>
+    </div >
   );
 
-  if (isMobile) {
-    return (
-      <Sheet open={open} onOpenChange={setOpen}>
-        <SheetContent side="left" className="w-72 p-0 border-r-0">
-          <SheetTitle><span className="sr-only">Main Menu</span></SheetTitle>
-          <SidebarContent />
-        </SheetContent>
-      </Sheet>
-    );
-  }
-
+if (isMobile) {
   return (
-    <aside
-      className={cn(
-        "hidden bg-sidebar md:block transition-all duration-300 ease-in-out",
-        isCollapsed ? "w-20" : "w-64"
-      )}
-    >
-      <SidebarContent />
-    </aside>
+    <Sheet open={open} onOpenChange={setOpen}>
+      <SheetContent side="left" className="w-72 p-0 border-r-0">
+        <SheetTitle><span className="sr-only">Main Menu</span></SheetTitle>
+        <SidebarContent />
+      </SheetContent>
+    </Sheet>
   );
+}
+
+return (
+  <aside
+    className={cn(
+      "hidden bg-sidebar md:block transition-all duration-300 ease-in-out",
+      isCollapsed ? "w-20" : "w-64"
+    )}
+  >
+    <SidebarContent />
+  </aside>
+);
 }
