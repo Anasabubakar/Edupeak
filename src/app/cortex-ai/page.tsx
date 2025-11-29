@@ -68,7 +68,103 @@ export default function CortexAIPage() {
   const [isTyping, setIsTyping] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
-  // ... (existing state)
+  const [uploadedImage, setUploadedImage] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [deleteId, setDeleteId] = useState<string | null>(null);
+
+  const scrollRef = useRef<HTMLDivElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Initialize sessions
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const storedSessions = localStorage.getItem(STORAGE_KEY);
+      const storedCurrentId = localStorage.getItem(CURRENT_SESSION_KEY);
+
+      if (storedSessions) {
+        try {
+          const parsed: ChatSession[] = JSON.parse(storedSessions);
+          // Revive dates
+          parsed.forEach(s => {
+            s.updatedAt = new Date(s.updatedAt);
+            s.messages.forEach(m => m.timestamp = new Date(m.timestamp));
+          });
+          setSessions(parsed);
+
+          if (storedCurrentId && parsed.find(s => s.id === storedCurrentId)) {
+            setCurrentSessionId(storedCurrentId);
+          } else if (parsed.length > 0) {
+            setCurrentSessionId(parsed[0].id);
+          } else {
+            createNewSession();
+          }
+        } catch (e) {
+          console.error("Failed to parse sessions", e);
+          createNewSession();
+        }
+      } else {
+        createNewSession();
+      }
+    }
+  }, []);
+
+  // Persist sessions
+  useEffect(() => {
+    if (typeof window !== "undefined" && sessions.length > 0) {
+      const toStore = sessions.map(s => ({
+        ...s,
+        updatedAt: s.updatedAt.toISOString(),
+        messages: s.messages.map(m => ({ ...m, timestamp: m.timestamp.toISOString() }))
+      }));
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(toStore));
+    }
+  }, [sessions]);
+
+  // Persist current session ID
+  useEffect(() => {
+    if (typeof window !== "undefined" && currentSessionId) {
+      localStorage.setItem(CURRENT_SESSION_KEY, currentSessionId);
+    }
+  }, [currentSessionId]);
+
+  // Auto-scroll
+  useEffect(() => {
+    if (scrollRef.current) {
+      scrollRef.current.scrollIntoView({ behavior: "smooth" });
+    }
+  }, [sessions, currentSessionId, isTyping, imagePreview]);
+
+  const getCurrentSession = () => sessions.find(s => s.id === currentSessionId);
+
+  const createNewSession = () => {
+    const newSession: ChatSession = {
+      id: Date.now().toString(),
+      title: "New Chat",
+      messages: [{
+        id: "welcome",
+        role: "ai",
+        content: "Hello! I'm Cortex, your personal AI study assistant. How can I help you with your university coursework today?",
+        timestamp: new Date()
+      }],
+      updatedAt: new Date()
+    };
+    setSessions(prev => [newSession, ...prev]);
+    setCurrentSessionId(newSession.id);
+    if (window.innerWidth < 768) {
+      setIsSidebarOpen(false); // Close sidebar on mobile when new chat starts
+    }
+  };
+
+  const MOCK_USER_CONTEXT = {
+    name: "Student",
+    courses: [
+      { name: "CS101: Intro to Computer Science", grade: "A-", progress: "Week 5" },
+      { name: "ECON101: Microeconomics", grade: "B+", progress: "Week 4" },
+      { name: "MATH101: Calculus I", grade: "B", progress: "Week 6" }
+    ],
+    recentTopics: ["Data Structures", "Supply and Demand", "Chain Rule"],
+    weaknesses: ["Calculus Chain Rule", "Market Equilibrium"]
+  };
 
   const generateAIResponse = useCallback((query: string, history: Message[]): string => {
     const lower = query.toLowerCase();
@@ -138,7 +234,104 @@ export default function CortexAIPage() {
     return "I'm listening. As your study assistant, I can help with specific course topics, analyze images, or review your progress. Could you rephrase that or provide more context?";
   }, []);
 
-  // ... (existing handlers)
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setUploadedImage(file);
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setImagePreview(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const removeImage = () => {
+    setUploadedImage(null);
+    setImagePreview(null);
+    if (fileInputRef.current) fileInputRef.current.value = "";
+  };
+
+  const handleDeleteSession = () => {
+    if (deleteId) {
+      const newSessions = sessions.filter(s => s.id !== deleteId);
+      setSessions(newSessions);
+
+      if (currentSessionId === deleteId) {
+        if (newSessions.length > 0) {
+          setCurrentSessionId(newSessions[0].id);
+        } else {
+          createNewSession();
+        }
+      }
+      setDeleteId(null);
+    }
+  };
+
+  const handleSend = async () => {
+    if ((!input.trim() && !uploadedImage) || !currentSessionId) return;
+
+    let content = input;
+    let imageUrl = undefined;
+
+    if (uploadedImage) {
+      setIsTyping(true);
+      const description = await describeImage(uploadedImage);
+      content = `[Image Uploaded] ${description}\n\n${input}`;
+      imageUrl = imagePreview || undefined;
+      removeImage();
+    }
+
+    const userMessage: Message = {
+      id: Date.now().toString(),
+      role: "user",
+      content: input || "Analyze this image",
+      timestamp: new Date(),
+      imageUrl: imageUrl
+    };
+
+    // Update session with user message
+    setSessions(prev => prev.map(s => {
+      if (s.id === currentSessionId) {
+        return {
+          ...s,
+          messages: [...s.messages, userMessage],
+          title: s.messages.length === 1 ? (input.slice(0, 30) || "Image Analysis") : s.title,
+          updatedAt: new Date()
+        };
+      }
+      return s;
+    }));
+
+    setInput("");
+    setIsTyping(true);
+
+    // Generate AI response
+    setTimeout(() => {
+      const currentSession = sessions.find(s => s.id === currentSessionId);
+      const history = currentSession ? [...currentSession.messages, userMessage] : [userMessage];
+      const aiContent = generateAIResponse(content, history);
+
+      const aiMessage: Message = {
+        id: (Date.now() + 1).toString(),
+        role: "ai",
+        content: aiContent,
+        timestamp: new Date(),
+      };
+
+      setSessions(prev => prev.map(s => {
+        if (s.id === currentSessionId) {
+          return {
+            ...s,
+            messages: [...s.messages, aiMessage],
+            updatedAt: new Date()
+          };
+        }
+        return s;
+      }));
+      setIsTyping(false);
+    }, 1500);
+  };
 
   const SidebarContent = () => (
     <div className="flex flex-col h-full">
