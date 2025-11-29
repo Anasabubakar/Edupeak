@@ -1,25 +1,19 @@
 
 
 export const sampleCurriculum = {
-  title: "Lesson 1: Calculating Profit",
-  description: "Learn how to determine if a business is making money.",
-  content: `To calculate profit, you must subtract your total costs from your total revenue. For example, if a street vendor selling roasted corn (or "Agbado" as it's locally known) spends 500 Naira on corn and charcoal, and sells the corn for a total of 1500 Naira, the profit is 1000 Naira. This principle can be applied to any small business, from a tailor in Aba to a fish seller in Yenagoa.`,
+  title: "CS101: Introduction to Computer Science",
+  description: "Fundamental concepts of computing and programming.",
+  content: `This course introduces the fundamental concepts of computer science and programming. You will learn about algorithms, data structures, and the basics of software development. We will explore how computers solve problems and how to write code to automate tasks. Topics include variables, loops, conditionals, functions, and object-oriented programming.`,
   notesHtml: `
-    <h3 class="font-semibold text-lg text-card-foreground">What is Profit?</h3>
-    <p>Profit is the financial gain made in a transaction or business period. It's the money left over after all the expenses have been paid. The formula is simple:</p>
-    <pre class="bg-muted text-muted-foreground px-4 py-2 rounded-lg my-4"><code>Revenue - Costs = Profit</code></pre>
+    <h3 class="font-semibold text-lg text-card-foreground">Lecture 1: Algorithms</h3>
+    <p>An algorithm is a step-by-step procedure for solving a problem. It's like a recipe for a computer.</p>
+    <pre class="bg-muted text-muted-foreground px-4 py-2 rounded-lg my-4"><code>Input -> Algorithm -> Output</code></pre>
     <ul class="list-disc pl-5 space-y-2">
-      <li><strong>Revenue:</strong> The total amount of money generated from selling goods or services.</li>
-      <li><strong>Costs:</strong> The total expenses incurred to create and sell the goods or services (e.g., materials, labor, rent).</li>
+      <li><strong>Efficiency:</strong> How fast an algorithm runs.</li>
+      <li><strong>Correctness:</strong> Whether the algorithm produces the right result.</li>
     </ul>
-    <h4 class="font-semibold text-md text-card-foreground mt-4">Local Example: A "Boli" Seller in Port Harcourt</h4>
-    <p>Imagine a roadside seller of roasted plantain ("Boli") and fish.
-    <br/>- Cost of raw plantains and fish: ₦3,000
-    <br/>- Cost of charcoal and oil: ₦500
-    <br/>- Total daily sales (Revenue): ₦7,500
-    <br/>- Total Costs: ₦3,000 + ₦500 = ₦3,500
-    <br/>- Daily Profit: ₦7,500 - ₦3,500 = ₦4,000
-    </p>
+    <h4 class="font-semibold text-md text-card-foreground mt-4">Example: Sorting</h4>
+    <p>Sorting a list of numbers is a classic algorithmic problem. Bubble sort, Merge sort, and Quick sort are common algorithms used to solve this.</p>
   `,
 };
 
@@ -29,10 +23,10 @@ export const studentData = {
   progress: 75,
   points: 1250,
   skillQuests: [
-    { id: 1, title: "Introduction to Digital Literacy", completed: true },
-    { id: 2, title: "Fundamentals of Financial Resilience", completed: true },
-    { id: 3, title: "Advanced Problem Solving", completed: false },
-    { id: 4, title: "Basics of Entrepreneurship", completed: false },
+    { id: 1, title: "CS101: Intro to CS", completed: true },
+    { id: 2, title: "ECON101: Microeconomics", completed: true },
+    { id: 3, title: "MATH101: Calculus I", completed: false },
+    { id: 4, title: "ENG101: Academic Writing", completed: false },
   ],
 };
 
@@ -43,43 +37,43 @@ export const studentProgressData = {
     avatar: "https://picsum.photos/seed/alex/100/100",
   },
   subjects: [
-    { name: "Mathematics", progress: 75 },
-    { name: "English Language", progress: 50 },
-    { name: "Basic Science", progress: 100 },
+    { name: "Computer Science", progress: 85 },
+    { name: "Economics", progress: 60 },
+    { name: "Calculus", progress: 40 },
   ],
   skillQuests: [
-    { title: "Algebra Basics", progress: 60, status: "Recommended" },
-    { title: "Poetry Analysis", progress: 35, status: "In Progress" },
-    { title: "Nigerian History", progress: 80, status: "Overdue" },
+    { title: "Binary Search Trees", progress: 60, status: "Recommended" },
+    { title: "Supply and Demand", progress: 35, status: "In Progress" },
+    { title: "Derivatives", progress: 80, status: "Overdue" },
   ],
   badges: [
-    { name: "Math Magician", achieved: true },
-    { name: "Grammar Guru", achieved: true },
-    { name: "Science Whiz", achieved: true },
-    { name: "History Buff", achieved: false },
+    { name: "Code Warrior", achieved: true },
+    { name: "Market Analyst", achieved: true },
+    { name: "Math Whiz", achieved: false },
+    { name: "Writer's Block", achieved: false },
   ],
 };
 
 export const resilienceData = {
   resilienceIndex: 88,
   scholarships: [
-    { id: 1, title: "MTN Science & Technology Scholarship", field: "STEM", deadline: "2024-10-31" },
-    { id: 2, title: "NLNG Postgraduate Scholarship", field: "Engineering, Geosciences", deadline: "2024-09-15" },
-    { id: 3, title: "NNPC/Total National Merit Scholarship", field: "Various", deadline: "2024-11-20" },
-    { id: 4, title: "UBA Foundation National Essay Competition", field: "Essay", deadline: "2024-08-30" },
+    { id: 1, title: "University STEM Grant", field: "STEM", deadline: "2024-10-31" },
+    { id: 2, title: "Global Economics Scholarship", field: "Economics", deadline: "2024-09-15" },
+    { id: 3, title: "Academic Excellence Award", field: "Various", deadline: "2024-11-20" },
+    { id: 4, title: "Research Fellowship", field: "Research", deadline: "2024-08-30" },
   ]
 };
 
 export const resilienceHubData = {
   resilienceIndex: 75,
   coreSkills: [
-    { name: "Budgeting", progress: 90 },
-    { name: "Saving", progress: 80 },
-    { name: "Investing", progress: 60 },
+    { name: "Time Management", progress: 90 },
+    { name: "Critical Thinking", progress: 80 },
+    { name: "Research Methods", progress: 60 },
   ],
   competition: {
-    title: "National Business Pitch Competition",
-    description: "Showcase your entrepreneurial spirit and win seed funding for your business idea. Applications close soon!",
+    title: "University Hackathon 2024",
+    description: "Build the next big thing in ed-tech. Teams of 4. Grand prize: $5000.",
   },
   scholarships: [
     { id: 1, title: "Tech Innovators Scholarship", description: "For students pursuing tech degrees." },
@@ -109,31 +103,31 @@ export const teacherAnalyticsData = {
     completionRate: 85,
   },
   difficultAreas: [
-    "Advanced Algorithmic Thinking",
-    "Capital Investment Analysis",
-    "Network Security Principles",
+    "Advanced Algorithms",
+    "Macroeconomic Theory",
+    "Multivariable Calculus",
   ]
 };
 
 export const tpdModules = [
-  { id: 1, title: "Modern Pedagogy in the Digital Age", progress: 100, certificate: true, imageId: "pedagogy" },
-  { id: 2, title: "Integrating EDUPEAK in Your Classroom", progress: 75, certificate: false, imageId: "classroom-management" },
-  { id: 3, title: "Teaching Physics with Local Examples", progress: 20, certificate: false, imageId: "digital-skills" },
-  { id: 4, title: "Financial Literacy for Educators", progress: 0, certificate: false, imageId: "financial-literacy" },
+  { id: 1, title: "Modern Pedagogy in Higher Ed", progress: 100, certificate: true, imageId: "pedagogy" },
+  { id: 2, title: "Integrating AI in Curriculum", progress: 75, certificate: false, imageId: "classroom-management" },
+  { id: 3, title: "Research Methodologies", progress: 20, certificate: false, imageId: "digital-skills" },
+  { id: 4, title: "Grant Writing for Academics", progress: 0, certificate: false, imageId: "financial-literacy" },
 ];
 
 export const iadtData = {
   facilityHealth: [
-    { title: "Lab Functionality", status: 45, color: "hsl(var(--chart-2))" },
-    { title: "Sanitation Facilities", status: 60, color: "hsl(var(--chart-4))" },
-    { title: "Furniture Adequacy", status: 85, color: "hsl(var(--chart-1))" },
-    { title: "Library Resources", status: 70, color: "hsl(var(--chart-5))" },
+    { title: "Computer Lab", status: 45, color: "hsl(var(--chart-2))" },
+    { title: "Lecture Halls", status: 60, color: "hsl(var(--chart-4))" },
+    { title: "Library", status: 85, color: "hsl(var(--chart-1))" },
+    { title: "Research Center", status: 70, color: "hsl(var(--chart-5))" },
   ],
   maintenanceRequests: [
-    { id: "REQ-001", issue: "Leaking Roof in Classroom 3", status: "Resolved", reported: "2024-05-10", resolutionTime: "5 days" },
-    { id: "REQ-002", issue: "Broken Lab Equipment (Microscope #2)", status: "In Progress", reported: "2024-05-20", resolutionTime: "N/A" },
-    { id: "REQ-003", issue: "Insufficient Chairs in JSS2", status: "Open", reported: "2024-05-28", resolutionTime: "N/A" },
-    { id: "REQ-004", issue: "Faulty Wiring in Admin Block", status: "Resolved", reported: "2024-04-15", resolutionTime: "2 days" },
+    { id: "REQ-001", issue: "Projector in Hall A", status: "Resolved", reported: "2024-05-10", resolutionTime: "5 days" },
+    { id: "REQ-002", issue: "Server Room AC", status: "In Progress", reported: "2024-05-20", resolutionTime: "N/A" },
+    { id: "REQ-003", issue: "Chairs in Lab 3", status: "Open", reported: "2024-05-28", resolutionTime: "N/A" },
+    { id: "REQ-004", issue: "Wifi Access Point", status: "Resolved", reported: "2024-04-15", resolutionTime: "2 days" },
   ],
   assetUtilization: [
     { name: "Jan", "Digital Skills": 400, "Financial Literacy": 240 },
@@ -146,38 +140,38 @@ export const iadtData = {
 };
 
 export const skillQuests = [
-    {
-        id: 1,
-        title: "Introduction to Algebra",
-        subject: "Mathematics",
-        difficulty: "Easy",
-        progress: 75,
-    },
-    {
-        id: 2,
-        title: "Reading Comprehension",
-        subject: "English Studies",
-        difficulty: "Medium",
-        progress: 100,
-    },
-    {
-        id: 3,
-        title: "Photosynthesis Basics",
-        subject: "Basic Science",
-        difficulty: "Easy",
-        progress: 25,
-    },
-    {
-        id: 4,
-        title: "Nigerian Civil War History",
-        subject: "Social Studies",
-        difficulty: "Hard",
-        progress: 0,
-    },
+  {
+    id: 1,
+    title: "Intro to Python",
+    subject: "Computer Science",
+    difficulty: "Easy",
+    progress: 75,
+  },
+  {
+    id: 2,
+    title: "Market Structures",
+    subject: "Economics",
+    difficulty: "Medium",
+    progress: 100,
+  },
+  {
+    id: 3,
+    title: "Limits and Continuity",
+    subject: "Calculus",
+    difficulty: "Easy",
+    progress: 25,
+  },
+  {
+    id: 4,
+    title: "Essay Structure",
+    subject: "Academic Writing",
+    difficulty: "Hard",
+    progress: 0,
+  },
 ];
 
 export const certificates = [
-  { id: 1, title: "Digital Literacy Certification Level 1", date: "15/08/2024", imageId: "cert-digital" },
-  { id: 2, title: "Foundational Mathematics", date: "22/07/2024", imageId: "cert-math" },
-  { id: 3, title: "Basic English Proficiency", date: "05/06/2024", imageId: "cert-english" },
+  { id: 1, title: "Certified Python Developer", date: "15/08/2024", imageId: "cert-digital" },
+  { id: 2, title: "Microeconomics Principles", date: "22/07/2024", imageId: "cert-math" },
+  { id: 3, title: "Academic Writing Proficiency", date: "05/06/2024", imageId: "cert-english" },
 ];

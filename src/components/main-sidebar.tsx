@@ -32,7 +32,7 @@ const studentNav = [
   { href: "/student", icon: LayoutDashboard, label: "Dashboard" },
   { href: "/student/progress", icon: LineChart, label: "Progress Tracker" },
   { href: "/student/learn", icon: BookOpen, label: "Learn" },
-  { href: "/student/quiz", icon: Target, label: "Skill Quests" },
+  { href: "/student/quiz", icon: Target, label: "Lessons" },
   { href: "/student/certificates", icon: Award, label: "Certificates" },
   { href: "/student/resilience", icon: Trophy, label: "Resilience Score" },
   { href: "/cortex-ai", icon: Sparkles, label: "Cortex AI" },
@@ -86,7 +86,7 @@ export function MainSidebar() {
             EDUPEAK
           </span>
         </Link>
-         {!isMobile && (
+        {!isMobile && (
           <Button
             variant="ghost"
             size="icon"
@@ -118,7 +118,7 @@ export function MainSidebar() {
               (item.href.length > `/${portal}`.length
                 ? true
                 : pathname === item.href);
-            
+
             const linkContent = (
               <div
                 className={cn(
@@ -151,7 +151,7 @@ export function MainSidebar() {
                 </Tooltip>
               );
             }
-            
+
             return (
               <Link key={item.href} href={item.href}>
                 {linkContent}

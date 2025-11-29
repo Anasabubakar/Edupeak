@@ -22,9 +22,8 @@ export default function CertificatesPage() {
           <Award className="h-8 w-8 text-primary" />
           My Certificates
         </h1>
-        <p className="text-muted-foreground mt-1">
-          Congratulations on your achievements! Here are the certificates you've
-          earned.
+        <p className="text-muted-foreground mt-1 text-lg">
+          Official academic transcripts and certifications.
         </p>
       </div>
 
@@ -34,32 +33,34 @@ export default function CertificatesPage() {
             (img) => img.id === cert.imageId
           );
           return (
-            <Card key={cert.id} className="flex flex-col bg-card/70 border-primary/20 hover:border-primary/50 transition-all">
+            <Card key={cert.id} className="flex flex-col bg-card border-border hover:border-primary/50 transition-all shadow-sm hover:shadow-md group">
               <CardHeader className="p-0">
                 {image && (
-                  <div className="relative aspect-[4/3]">
+                  <div className="relative aspect-[4/3] overflow-hidden rounded-t-lg">
                     <Image
                       src={image.imageUrl}
                       alt={image.description}
                       fill
-                      className="object-cover rounded-t-lg"
+                      className="object-cover transition-transform duration-500 group-hover:scale-105"
                       data-ai-hint={image.imageHint}
                     />
+                    <div className="absolute inset-0 bg-black/20 group-hover:bg-black/10 transition-colors" />
                   </div>
                 )}
               </CardHeader>
               <CardContent className="flex-1 pt-6">
-                <CardTitle className="text-xl">{cert.title}</CardTitle>
-                <p className="text-sm text-muted-foreground mt-2">
-                  Completed on: {cert.date}
+                <CardTitle className="text-xl group-hover:text-primary transition-colors">{cert.title}</CardTitle>
+                <p className="text-sm text-muted-foreground mt-2 flex items-center gap-2">
+                  <span className="inline-block w-2 h-2 rounded-full bg-green-500"></span>
+                  Issued on: {cert.date}
                 </p>
               </CardContent>
-              <CardFooter className="flex justify-end gap-2">
-                <Button variant="default">
-                  <Share2 className="mr-2" /> Share
+              <CardFooter className="flex justify-between gap-2 border-t pt-4">
+                <Button variant="outline" size="sm" className="w-full">
+                  <Share2 className="mr-2 h-4 w-4" /> Share
                 </Button>
-                <Button variant="secondary">
-                  <Printer className="mr-2" /> Print
+                <Button variant="default" size="sm" className="w-full">
+                  <Printer className="mr-2 h-4 w-4" /> Download
                 </Button>
               </CardFooter>
             </Card>
