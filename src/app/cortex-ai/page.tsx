@@ -334,53 +334,49 @@ export default function CortexAiPage() {
                         </AvatarFallback>
                       </Avatar>
                     </div>
+                    "rounded-lg p-3 text-sm",
+                    message.role === "user"
+                      ? "bg-primary text-primary-foreground"
+                      : "bg-muted"
                   )}
-                  <div
-                    className={cn(
-                      'max-w-2xl rounded-2xl p-4 backdrop-blur-sm transition-all duration-200 hover:shadow-lg',
-                      message.role === 'assistant'
-                        ? 'bg-gradient-to-br from-[#1E193B] to-[#2A2050] text-white border border-primary/20 shadow-[0_0_20px_rgba(var(--primary-rgb),0.1)]'
-                        : 'bg-gradient-to-br from-card to-card/80 text-card-foreground border border-border/50'
-                    )}
-                  >
-                    <p className="font-bold text-sm mb-2 opacity-80">
-                      {message.role === 'assistant' ? 'Cortex-AI' : 'You'}
-                    </p>
-                    <div className={cn(
-                      'prose prose-sm max-w-none',
-                      message.role === 'assistant' ? 'prose-invert' : ''
-                    )}>
-                      <ReactMarkdown remarkPlugins={[remarkGfm]}>
-                        {message.content}
-                      </ReactMarkdown>
-                    </div>
-                  </div>
-                  {message.role === 'user' && (
-                    <Avatar className="h-9 w-9 border-2 border-primary/30 shadow-lg">
-                      <AvatarImage src={`https://picsum.photos/seed/student/100/100`} />
-                      <AvatarFallback className="bg-primary/20">
-                        <User className="text-primary" />
-                      </AvatarFallback>
-                    </Avatar>
-                  )}
-                </motion.div>
-              ))}
-            </AnimatePresence>
-          )}
-          {isLoading && (
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="flex items-start gap-4"
-            >
-              <div className="relative">
-                <div className="absolute inset-0 bg-primary/30 blur-xl rounded-full animate-pulse" />
-                <Avatar className="h-9 w-9 border-2 border-primary/30 relative">
-                  <AvatarImage src={`https://picsum.photos/seed/cortexai/100/100`} />
-                  <AvatarFallback className="bg-primary/20">
-                    <Bot className="text-primary" />
-                  </AvatarFallback>
+                >
+                  {message.content}
+                </div>
+              </div>
+            ))}
+            {isTyping && (
+              <div className="flex gap-3 max-w-[80%]">
+                 <Avatar className="h-8 w-8 bg-primary/10">
+                  <AvatarFallback><Bot className="h-4 w-4 text-primary" /></AvatarFallback>
                 </Avatar>
+                <div className="bg-muted rounded-lg p-3 text-sm flex items-center gap-2">
+                  <span className="animate-bounce">●</span>
+                  <span className="animate-bounce delay-100">●</span>
+                  <span className="animate-bounce delay-200">●</span>
+                </div>
+              </div>
+            )}
+            <div ref={scrollRef} />
+          </div>
+        </ScrollArea>
+
+        <div className="p-4 border-t bg-background/50 backdrop-blur-sm">
+           {messages.length === 1 && (
+            <div className="mb-4 flex gap-2 overflow-x-auto pb-2">
+              {SUGGESTED_PROMPTS.map((prompt) => (
+                <Button
+                  key={prompt}
+                  variant="outline"
+                  size="sm"
+                  className="whitespace-nowrap rounded-full border-primary/20 hover:bg-primary/10 hover:text-primary transition-colors"
+                  onClick={() => {
+                    setInput(prompt);
+                    // Optional: auto-send
+                  }}
+                >
+                  {prompt}
+                </Button>
+              ))}
               </div>
               <div className="bg-gradient-to-br from-[#1E193B] to-[#2A2050] text-white max-w-2xl rounded-2xl p-4 border border-primary/20 shadow-[0_0_20px_rgba(var(--primary-rgb),0.2)]">
                 <div className="flex space-x-2">
@@ -438,7 +434,7 @@ export default function CortexAiPage() {
             </Button>
           </form>
         </div>
-      </div>
-    </div>
+      </div >
+    </div >
   );
 }

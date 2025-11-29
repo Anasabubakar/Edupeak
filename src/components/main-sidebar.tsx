@@ -15,6 +15,7 @@ import {
   Sparkles,
   LineChart,
   Award,
+  Calendar,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { EdupeakLogo } from "./icons";
@@ -33,6 +34,7 @@ const studentNav = [
   { href: "/student/progress", icon: LineChart, label: "Progress Tracker" },
   { href: "/student/learn", icon: BookOpen, label: "Learn" },
   { href: "/student/quiz", icon: Target, label: "Lessons" },
+  { href: "/student/planner", icon: Calendar, label: "Study Planner" },
   { href: "/student/certificates", icon: Award, label: "Certificates" },
   { href: "/student/resilience", icon: Trophy, label: "Resilience Score" },
   { href: "/cortex-ai", icon: Sparkles, label: "Cortex AI" },

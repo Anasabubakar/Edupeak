@@ -1,6 +1,6 @@
-
 'use client';
 
+import { useState } from 'react';
 import {
   Card,
   CardContent,
@@ -16,6 +16,7 @@ import {
   ChevronDown,
   Book,
   Laptop,
+  Sparkles,
 } from 'lucide-react';
 import Link from 'next/link';
 import {
@@ -24,9 +25,19 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 import { sampleCurriculum } from '@/lib/placeholder-data';
 
 export default function LearnPage() {
+  const [isAiExplaining, setIsAiExplaining] = useState(false);
+
   return (
     <div className="space-y-8">
       <div>
@@ -63,18 +74,48 @@ export default function LearnPage() {
 
       <Card className="border-l-4 border-l-primary shadow-md hover:shadow-lg transition-shadow duration-300">
         <CardHeader>
-          <div className="flex items-center gap-3">
-            <div className="bg-primary/10 p-3 rounded-full">
-              <BookOpen className="h-8 w-8 text-primary" />
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="bg-primary/10 p-3 rounded-full">
+                <BookOpen className="h-8 w-8 text-primary" />
+              </div>
+              <div>
+                <CardTitle className="text-2xl">
+                  Current Module: Algorithms & Data Structures
+                </CardTitle>
+                <CardDescription className="text-base mt-1">
+                  Week 3 - Lecture 1
+                </CardDescription>
+              </div>
             </div>
-            <div>
-              <CardTitle className="text-2xl">
-                Current Module: Algorithms & Data Structures
-              </CardTitle>
-              <CardDescription className="text-base mt-1">
-                Week 3 - Lecture 1
-              </CardDescription>
-            </div>
+            <Dialog>
+              <DialogTrigger asChild>
+                <Button variant="secondary" className="gap-2 text-primary hover:text-primary/80">
+                  <Sparkles className="h-4 w-4" />
+                  Explain with AI
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="sm:max-w-[500px]">
+                <DialogHeader>
+                  <DialogTitle className="flex items-center gap-2">
+                    <Sparkles className="h-5 w-5 text-primary" />
+                    Cortex AI Explanation
+                  </DialogTitle>
+                  <DialogDescription>
+                    Simplified explanation of the current topic.
+                  </DialogDescription>
+                </DialogHeader>
+                <div className="bg-muted/50 p-4 rounded-lg text-sm leading-relaxed">
+                  <p className="font-semibold mb-2">Topic: Algorithms</p>
+                  <p>
+                    Think of an algorithm like a recipe for baking a cake. It's a specific set of instructions that you follow in order to get a predictable result. In computer science, we use algorithms to tell the computer exactly how to solve a problem, step-by-step. Efficiency matters because a faster recipe means we get the cake (or the answer) sooner!
+                  </p>
+                </div>
+                <div className="flex justify-end">
+                  <Button variant="outline" onClick={() => setIsAiExplaining(false)}>Close</Button>
+                </div>
+              </DialogContent>
+            </Dialog>
           </div>
         </CardHeader>
         <CardContent>

@@ -14,7 +14,18 @@ import { certificates } from "@/lib/placeholder-data";
 import { PlaceHolderImages } from "@/lib/placeholder-images";
 import { Share2, Printer, Award } from "lucide-react";
 
+import { useToast } from "@/hooks/use-toast";
+
 export default function CertificatesPage() {
+  const { toast } = useToast();
+
+  const handleAction = (action: string, title: string) => {
+    toast({
+      title: `${action} Successful`,
+      description: `You have successfully ${action.toLowerCase()}ed ${title}.`,
+    });
+  };
+
   return (
     <div className="space-y-8">
       <div>
@@ -56,10 +67,20 @@ export default function CertificatesPage() {
                 </p>
               </CardContent>
               <CardFooter className="flex justify-between gap-2 border-t pt-4">
-                <Button variant="outline" size="sm" className="w-full">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="w-full"
+                  onClick={() => handleAction("Share", cert.title)}
+                >
                   <Share2 className="mr-2 h-4 w-4" /> Share
                 </Button>
-                <Button variant="default" size="sm" className="w-full">
+                <Button
+                  variant="default"
+                  size="sm"
+                  className="w-full"
+                  onClick={() => handleAction("Download", cert.title)}
+                >
                   <Printer className="mr-2 h-4 w-4" /> Download
                 </Button>
               </CardFooter>
